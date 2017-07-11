@@ -26,4 +26,3 @@ DEFINES += QT_DEPRECATED_WARNINGS
 HEADERS += \
     saleaesocket.h \
     saleaesocket.h \
-    saleaeapitypes.h
