@@ -1,12 +1,7 @@
 #ifndef SALEAESOCKET_H
 #define SALEAESOCKET_H
 
-#include <QObject>
 #include <QTcpSocket>
-#include <QDataStream>
-#include <QString>
-#include <QStringList>
-
 
 //Command strings
 
@@ -46,7 +41,6 @@ const QString set_digital_voltage_option_cmd = "SET_DIGITAL_VOLTAGE_OPTION";
 const QString get_digital_voltage_options_cmd = "GET_DIGITAL_VOLTAGE_OPTIONS";
 
 const QString close_all_tabs_cmd = "CLOSE_ALL_TABS";
-
 const QStringList TypeStings = {"Logic","Logic8","Logic16","LogicPro8","LogicPro16"};
 
 enum DeviceType {
@@ -55,6 +49,19 @@ enum DeviceType {
     Logic16,
     LogicPro8,
     LogicPro16
+};
+
+struct SampleRate {
+public:
+    int AnalogSampleRate;
+    int DigitalSampleRate;
+};
+
+struct DigitalVoltageOption {
+public:
+    int Index;
+    QString Description;
+    bool IsActive;
 };
 
 struct ConnectedDevice {
@@ -73,22 +80,39 @@ class saleaesocket : public QObject
 public:
     explicit saleaesocket(QObject *parent = nullptr);
     ~saleaesocket();
-    void Connect();
+
     int port;
     QString host;
     QString last_response;
     QList<ConnectedDevice> devices;
+    QList<int> digital_channels;
+    QList<int> analog_channels;
+
+    void Connect();
+    void Disconnect();
+    void Capture();
+    void StopCapture();
+    void CloseAllTabs();
+    void SetNumSamples(int num_samples);
+    void SetCaptureSeconds(double num_seconds);
+
+    QList<DigitalVoltageOption> GetDigitalVoltageOption();
+    void SetDigitalVoltageOption(DigitalVoltageOption option);
+    SampleRate GetSampleRate();
+    void SetSampleRate(SampleRate rate);
+
 
     void GetActiveDevices();
     void SelectActiveDevice(int device_number);
-    void GetActiveChannels(QList<int> digital_channels, QList<int> analog_channels);
+    void ResetActiveChannels();
+    void GetActiveChannels();
     void SetActiveChannels(QList<int> digital_channels, QList<int> analog_channels);
 
-signals:
-
 public slots:
+    void connected();
     void disconnected();
     void bytesWritten(qint64 bytes);
+    void readReady();
 
 private:
     QTcpSocket *socket;
